@@ -19,7 +19,7 @@ site: {
   description: 'We value your input.',  // Subtitle shown on the form
   logo: 'assets/logo.svg',             // Path to your logo
   favicon: 'assets/favicon.svg',       // Path to your favicon
-  accentColor: '#5865F2',              // Primary color (hex)
+  accentColor: '#8B5CF6',              // Primary color (hex)
   theme: 'light',                      // Color theme
   footer: 'Powered by Feedback System' // Footer text
 }

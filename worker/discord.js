@@ -25,7 +25,7 @@ export function formatDiscordEmbed(data, config) {
     }
   }
 
-  const accentColor = config.accentColor || 0x5865f2;
+  const accentColor = config.accentColor || 0x8b5cf6;
   const color = typeof accentColor === 'string'
     ? parseInt(accentColor.replace('#', ''), 16)
     : accentColor;

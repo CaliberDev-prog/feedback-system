@@ -9,7 +9,7 @@ export function getConfig() {
 
 export function getAccentColor() {
   const config = getConfig();
-  return config && config.site && config.site.accentColor ? config.site.accentColor : '#5865F2';
+  return config && config.site && config.site.accentColor ? config.site.accentColor : '#8B5CF6';
 }
 
 export function sanitizeHTML(str) {
@@ -72,26 +72,24 @@ export function setLoading(button, isLoading, originalText) {
 }
 
 export function showNotification(message, type, container) {
-  const colors = {
-    success: 'bg-green-50 border-green-200 text-green-800',
-    error: 'bg-red-50 border-red-200 text-red-800',
-    info: 'bg-blue-50 border-blue-200 text-blue-800',
+  const styles = {
+    success: { bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.3)', color: '#34d399', icon: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z' },
+    error: { bg: 'rgba(239,68,68,0.15)', border: 'rgba(239,68,68,0.3)', color: '#f87171', icon: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z' },
+    info: { bg: 'rgba(139,92,246,0.15)', border: 'rgba(139,92,246,0.3)', color: '#a78bfa', icon: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
   };
-  const icons = {
-    success: 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
-    error: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',
-    info: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
-  };
+
+  const s = styles[type] || styles.info;
 
   const existing = container.querySelector('.notification-toast');
   if (existing) existing.remove();
 
   const toast = document.createElement('div');
-  toast.className = `notification-toast fixed top-4 right-4 z-50 max-w-sm border rounded-lg p-4 shadow-lg ${colors[type]} transition-all duration-300 translate-x-0`;
+  toast.className = 'notification-toast fixed top-4 right-4 z-50 max-w-sm border rounded-lg p-4 shadow-lg transition-all duration-300';
+  toast.style.cssText = `background: ${s.bg}; border-color: ${s.border}; color: ${s.color};`;
   toast.innerHTML = `
     <div class="flex items-start">
       <svg class="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${icons[type]}"></path>
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${s.icon}"></path>
       </svg>
       <p class="text-sm font-medium">${sanitizeHTML(message)}</p>
       <button class="ml-auto pl-2" onclick="this.parentElement.parentElement.remove()">

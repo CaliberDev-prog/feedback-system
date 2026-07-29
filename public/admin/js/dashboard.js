@@ -130,8 +130,8 @@ async function renderDashboard() {
       <div class="stat-card"><h3>Today</h3><p class="stat-value" id="stat-today">-</p></div>
     </div>
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 fade-in">
-      <div class="card"><div class="card-header"><h2>Recent Submissions</h2></div><div class="card-body" id="recent-submissions"><p class="text-gray-400 text-sm">Loading...</p></div></div>
-      <div class="card"><div class="card-header"><h2>Rating Distribution</h2></div><div class="card-body" id="rating-dist"><p class="text-gray-400 text-sm">Loading...</p></div></div>
+      <div class="card"><div class="card-header"><h2>Recent Submissions</h2></div><div class="card-body" id="recent-submissions"><p style="color: var(--text-muted);" class="text-sm">Loading...</p></div></div>
+      <div class="card"><div class="card-header"><h2>Rating Distribution</h2></div><div class="card-body" id="rating-dist"><p style="color: var(--text-muted);" class="text-sm">Loading...</p></div></div>
     </div>
   `;
 
@@ -156,22 +156,22 @@ async function renderDashboard() {
       renderRecentSubmissions(subs.submissions);
     }
   } catch (err) {
-    content.innerHTML = '<div class="text-center text-red-500 py-8">Failed to load dashboard data.</div>';
+    content.innerHTML = '<div class="text-center py-8 fade-in" style="color: var(--error);">Failed to load dashboard data.</div>';
   }
 }
 
 function renderRecentSubmissions(submissions) {
   const container = document.getElementById('recent-submissions');
   if (!submissions || submissions.length === 0) {
-    container.innerHTML = '<p class="text-gray-400 text-sm text-center py-8">No submissions yet.</p>';
+    container.innerHTML = '<p style="color: var(--text-muted);" class="text-sm text-center py-8">No submissions yet.</p>';
     return;
   }
 
   container.innerHTML = submissions.map((s) => `
-    <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0 cursor-pointer hover:bg-gray-50 rounded px-2 -mx-2 transition-colors" data-id="${s.id}">
+    <div class="flex items-center justify-between py-2 border-b last:border-0 cursor-pointer rounded px-2 -mx-2 transition-colors" data-id="${s.id}" style="border-color: var(--border-light);">
       <div>
-        <p class="text-sm font-medium text-gray-900">${s.discord ? sanitizeHTML(s.discord) : 'Anonymous'}</p>
-        <p class="text-xs text-gray-400">${formatDateShort(s.timestamp)}</p>
+        <p class="text-sm font-medium" style="color: var(--text);">${s.discord ? sanitizeHTML(s.discord) : '<span style="color: var(--text-muted);">Anonymous</span>'}</p>
+        <p class="text-xs" style="color: var(--text-muted);">${formatDateShort(s.timestamp)}</p>
       </div>
       <span class="badge badge-info text-xs">${s.answers.length} fields</span>
     </div>
@@ -185,7 +185,7 @@ function renderRecentSubmissions(submissions) {
 function renderRatingDistribution(distribution, average, count) {
   const container = document.getElementById('rating-dist');
   if (!distribution || Object.keys(distribution).length === 0 || !count) {
-    container.innerHTML = '<p class="text-gray-400 text-sm text-center py-8">No ratings yet.</p>';
+    container.innerHTML = '<p style="color: var(--text-muted);" class="text-sm text-center py-8">No ratings yet.</p>';
     return;
   }
 
@@ -197,20 +197,20 @@ function renderRatingDistribution(distribution, average, count) {
     const stars = '\u2605'.repeat(Number(rating)) + '\u2606'.repeat(Math.max(0, 5 - Number(rating)));
     return `
       <div class="flex items-center gap-3">
-        <span class="text-sm w-20 text-gray-600">${stars}</span>
-        <div class="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-          <div class="h-full bg-yellow-400 rounded-full transition-all" style="width: ${pct}%"></div>
+        <span class="text-sm w-20" style="color: var(--text-muted);">${stars}</span>
+        <div class="flex-1 h-2 rounded-full overflow-hidden" style="background: var(--border-light);">
+          <div class="h-full rounded-full transition-all" style="width: ${pct}%; background: var(--warning);"></div>
         </div>
-        <span class="text-sm text-gray-500 w-8 text-right">${cnt}</span>
+        <span class="text-sm w-8 text-right" style="color: var(--text-muted);">${cnt}</span>
       </div>
     `;
   }).join('');
 
   container.innerHTML = `
     <div class="text-center mb-4">
-      <span class="text-3xl font-bold text-gray-900">${average}</span>
-      <span class="text-gray-400 ml-1">/ 5</span>
-      <p class="text-sm text-gray-400">${count} ratings</p>
+      <span class="text-3xl font-bold" style="color: var(--text);">${average}</span>
+      <span style="color: var(--text-muted);" class="ml-1">/ 5</span>
+      <p class="text-sm" style="color: var(--text-muted);">${count} ratings</p>
     </div>
     <div class="space-y-2">${bars}</div>
   `;
@@ -229,7 +229,7 @@ async function renderSubmissions() {
         <option value="active">Active</option>
         <option value="archived">Archived</option>
       </select>
-      <button id="export-btn" class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors flex items-center gap-2">
+      <button id="export-btn" class="px-4 py-2 border rounded-lg text-sm flex items-center gap-2 transition-colors" style="border-color: var(--border); color: var(--text-muted); background: var(--card-alt);">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
         Export
       </button>
@@ -248,12 +248,12 @@ async function renderSubmissions() {
               </tr>
             </thead>
             <tbody id="submissions-body">
-              <tr><td colspan="5" class="text-center text-gray-400 py-8">Loading...</td></tr>
+              <tr><td colspan="5" class="text-center py-8" style="color: var(--text-muted);">Loading...</td></tr>
             </tbody>
           </table>
         </div>
       </div>
-      <div class="px-6 py-3 border-t border-gray-100 flex items-center justify-between text-sm text-gray-500" id="pagination"></div>
+      <div class="px-6 py-3 border-t flex items-center justify-between text-sm" style="border-color: var(--border); color: var(--text-muted);" id="pagination"></div>
     </div>
   `;
 
@@ -276,7 +276,7 @@ async function renderSubmissions() {
 
 async function loadSubmissions() {
   const tbody = document.getElementById('submissions-body');
-  tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-8">Loading...</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8" style="color: var(--text-muted);">Loading...</td></tr>';
 
   try {
     let url = `${API_BASE}/api/admin/submissions?page=${currentPage}&limit=20`;
@@ -294,7 +294,7 @@ async function loadSubmissions() {
     renderSubmissionsTable(submissionsCache);
     renderPagination();
   } catch {
-    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-red-500 py-8">Failed to load submissions.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8" style="color: var(--error);">Failed to load submissions.</td></tr>';
   }
 }
 
@@ -302,24 +302,24 @@ function renderSubmissionsTable(submissions) {
   const tbody = document.getElementById('submissions-body');
 
   if (!submissions || submissions.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-400 py-8">No submissions found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-8" style="color: var(--text-muted);">No submissions found.</td></tr>';
     return;
   }
 
   tbody.innerHTML = submissions.map((s) => `
-    <tr class="cursor-pointer hover:bg-gray-50" data-id="${s.id}">
-      <td class="text-sm whitespace-nowrap">${formatDateShort(s.timestamp)}</td>
-      <td class="text-sm">${s.discord ? sanitizeHTML(s.discord) : '<span class="text-gray-400">-</span>'}</td>
-      <td class="text-sm text-gray-500">${s.answers.length} answers</td>
+    <tr class="cursor-pointer" data-id="${s.id}">
+      <td class="text-sm whitespace-nowrap" style="color: var(--text);">${formatDateShort(s.timestamp)}</td>
+      <td class="text-sm" style="color: var(--text);">${s.discord ? sanitizeHTML(s.discord) : '<span style="color: var(--text-muted);">-</span>'}</td>
+      <td class="text-sm" style="color: var(--text-muted);">${s.answers.length} answers</td>
       <td>${s.archived ? '<span class="badge badge-warning">Archived</span>' : '<span class="badge badge-success">Active</span>'}</td>
       <td>
         <div class="flex items-center gap-2">
-          <button class="view-btn text-sm text-[#5865F2] hover:underline" data-id="${s.id}">View</button>
+          <button class="view-btn text-sm" style="color: var(--accent);" data-id="${s.id}">View</button>
           ${s.archived
-            ? `<button class="unarchive-btn text-sm text-gray-500 hover:text-gray-700" data-id="${s.id}">Restore</button>`
-            : `<button class="archive-btn text-sm text-gray-500 hover:text-gray-700" data-id="${s.id}">Archive</button>`
+            ? `<button class="unarchive-btn text-sm" style="color: var(--text-muted);" data-id="${s.id}">Restore</button>`
+            : `<button class="archive-btn text-sm" style="color: var(--text-muted);" data-id="${s.id}">Archive</button>`
           }
-          <button class="delete-btn text-sm text-red-500 hover:text-red-700" data-id="${s.id}">Delete</button>
+          <button class="delete-btn text-sm" style="color: var(--error);" data-id="${s.id}">Delete</button>
         </div>
       </td>
     </tr>
@@ -358,8 +358,8 @@ function renderPagination() {
   container.innerHTML = `
     <span>Page ${currentPage} of ${totalPages} (${submissionsTotal} submissions)</span>
     <div class="flex gap-2">
-      <button class="px-3 py-1 border rounded text-sm ${currentPage <= 1 ? 'text-gray-300' : 'hover:bg-gray-50'}" ${currentPage <= 1 ? 'disabled' : ''} id="prev-page">Previous</button>
-      <button class="px-3 py-1 border rounded text-sm ${currentPage >= totalPages ? 'text-gray-300' : 'hover:bg-gray-50'}" ${currentPage >= totalPages ? 'disabled' : ''} id="next-page">Next</button>
+      <button class="px-3 py-1 border rounded text-sm" style="border-color: var(--border); ${currentPage <= 1 ? 'color: var(--text-dim);' : ''}" ${currentPage <= 1 ? 'disabled' : ''} id="prev-page">Previous</button>
+      <button class="px-3 py-1 border rounded text-sm" style="border-color: var(--border); ${currentPage >= totalPages ? 'color: var(--text-dim);' : ''}" ${currentPage >= totalPages ? 'disabled' : ''} id="next-page">Next</button>
     </div>
   `;
 
@@ -383,7 +383,7 @@ async function openSubmission(id) {
     const sub = await response.json();
     showSubmissionModal(sub);
   } catch {
-    showModal('Error', '<p class="text-red-500">Failed to load submission.</p>');
+    showModal('Error', '<p style="color: var(--error);">Failed to load submission.</p>');
   }
 }
 
@@ -391,7 +391,7 @@ function showSubmissionModal(sub) {
   const answersHtml = sub.answers.map((a) => {
     let displayVal;
     if (Array.isArray(a.value)) {
-      displayVal = a.value.length > 0 ? a.value.join(', ') : '<span class="text-gray-400">None selected</span>';
+      displayVal = a.value.length > 0 ? a.value.join(', ') : '<span style="color: var(--text-muted);">None selected</span>';
     } else if (a.type === 'rating') {
       const val = Math.max(1, Math.min(10, Number(a.value)));
       const stars = '\u2605'.repeat(Math.min(val, 5)) + '\u2606'.repeat(Math.max(0, 5 - Math.min(val, 5)));
@@ -399,13 +399,13 @@ function showSubmissionModal(sub) {
     } else if (a.value) {
       displayVal = a.value;
     } else {
-      displayVal = '<span class="text-gray-400">-</span>';
+      displayVal = '<span style="color: var(--text-muted);">-</span>';
     }
 
     return `
       <div class="mb-3">
-        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">${sanitizeHTML(a.label || a.id)}</p>
-        <p class="text-sm text-gray-900">${displayVal}</p>
+        <p class="text-xs font-semibold uppercase tracking-wide mb-1" style="color: var(--text-muted);">${sanitizeHTML(a.label || a.id)}</p>
+        <p class="text-sm" style="color: var(--text);">${displayVal}</p>
       </div>
     `;
   }).join('');
@@ -413,32 +413,32 @@ function showSubmissionModal(sub) {
   const modalContent = `
     <div class="modal-header">
       <h2>Submission Details</h2>
-      <button class="modal-close p-1 hover:bg-gray-100 rounded" onclick="document.getElementById('modal-container').innerHTML = ''">
+      <button class="modal-close p-1 rounded" onclick="document.getElementById('modal-container').innerHTML = ''" style="color: var(--text-muted);">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
       </button>
     </div>
     <div class="modal-body">
-      <div class="flex items-center justify-between mb-4 pb-4 border-b border-gray-100">
+      <div class="flex items-center justify-between mb-4 pb-4 border-b" style="border-color: var(--border);">
         <div>
-          <p class="text-sm text-gray-500">Submitted ${formatDate(sub.timestamp)}</p>
-          <p class="text-sm text-gray-500">Discord: ${sub.discord ? sanitizeHTML(sub.discord) : '<span class="text-gray-400">Not provided</span>'}</p>
+          <p class="text-sm" style="color: var(--text-muted);">Submitted ${formatDate(sub.timestamp)}</p>
+          <p class="text-sm" style="color: var(--text-muted);">Discord: ${sub.discord ? sanitizeHTML(sub.discord) : '<span style="color: var(--text-dim);">Not provided</span>'}</p>
         </div>
         <span class="${sub.archived ? 'badge badge-warning' : 'badge badge-success'}">${sub.archived ? 'Archived' : 'Active'}</span>
       </div>
       ${answersHtml}
 
-      <div class="mt-4 pt-4 border-t border-gray-100">
-        <label class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 block">Internal Notes</label>
-        <textarea id="notes-textarea" class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm mt-1 outline-none focus:border-[#5865F2] transition-colors" rows="3" placeholder="Add internal notes...">${sanitizeHTML(sub.notes || '')}</textarea>
-        <button id="save-notes-btn" class="mt-2 px-3 py-1.5 bg-[#5865F2] text-white text-sm rounded-lg hover:bg-[#4752C4] transition-colors" data-id="${sub.id}">Save Notes</button>
+      <div class="mt-4 pt-4 border-t" style="border-color: var(--border);">
+        <label class="text-xs font-semibold uppercase tracking-wide mb-1 block" style="color: var(--text-muted);">Internal Notes</label>
+        <textarea id="notes-textarea" class="w-full px-3 py-2 border rounded-lg text-sm mt-1 outline-none transition-colors" rows="3" placeholder="Add internal notes..." style="background: var(--card-alt); border-color: var(--border); color: var(--text);"></textarea>
+        <button id="save-notes-btn" class="mt-2 px-3 py-1.5 text-white text-sm rounded-lg transition-colors" style="background: var(--accent);" data-id="${sub.id}">Save Notes</button>
       </div>
     </div>
     <div class="modal-footer">
       ${sub.archived
-        ? `<button class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 unarchive-modal-btn" data-id="${sub.id}">Restore</button>`
-        : `<button class="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-600 hover:bg-gray-50 archive-modal-btn" data-id="${sub.id}">Archive</button>`
+        ? `<button class="px-4 py-2 border rounded-lg text-sm" style="border-color: var(--border); color: var(--text-muted); background: var(--card-alt);" data-id="${sub.id}">Restore</button>`
+        : `<button class="px-4 py-2 border rounded-lg text-sm" style="border-color: var(--border); color: var(--text-muted); background: var(--card-alt);" data-id="${sub.id}">Archive</button>`
       }
-      <button class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 delete-modal-btn" data-id="${sub.id}">Delete</button>
+      <button class="px-4 py-2 text-white rounded-lg text-sm" style="background: var(--error);" data-id="${sub.id}">Delete</button>
     </div>
   `;
 
@@ -492,7 +492,7 @@ function showModal(title, bodyHtml, customHtml) {
         <div class="modal-content">
           <div class="modal-header">
             <h2>${title}</h2>
-            <button class="modal-close p-1 hover:bg-gray-100 rounded" onclick="document.getElementById('modal-container').innerHTML = ''">
+            <button class="modal-close p-1 rounded" onclick="document.getElementById('modal-container').innerHTML = ''" style="color: var(--text-muted);">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
@@ -604,7 +604,7 @@ async function renderAnalytics() {
       renderTimelineChart(data.timeline);
     }
   } catch {
-    content.innerHTML += '<div class="text-center text-red-500 py-4">Failed to load analytics.</div>';
+    content.innerHTML += '<div class="text-center py-4 fade-in" style="color: var(--error);">Failed to load analytics.</div>';
   }
 }
 
@@ -626,8 +626,8 @@ function renderTimelineChart(timeline) {
       datasets: [{
         label: 'Submissions',
         data: timeline.map((d) => d.count),
-        backgroundColor: 'rgba(88, 101, 242, 0.2)',
-        borderColor: 'rgba(88, 101, 242, 0.8)',
+        backgroundColor: 'rgba(139, 92, 246, 0.3)',
+        borderColor: 'rgba(139, 92, 246, 0.8)',
         borderWidth: 2,
         borderRadius: 4,
       }],
@@ -635,10 +635,26 @@ function renderTimelineChart(timeline) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: { legend: { display: false } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1a1a24',
+          titleColor: '#f0f0f5',
+          bodyColor: '#a0a0b8',
+          borderColor: '#2a2a3a',
+          borderWidth: 1,
+        },
+      },
       scales: {
-        y: { beginAtZero: true, ticks: { stepSize: 1 } },
-        x: { grid: { display: false } },
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1, color: '#6a6a80' },
+          grid: { color: '#2a2a3a' },
+        },
+        x: {
+          grid: { display: false },
+          ticks: { color: '#6a6a80' },
+        },
       },
     },
   });
@@ -651,7 +667,7 @@ async function renderActivity() {
       <div class="card-header"><h2>Activity Log</h2></div>
       <div class="card-body p-0">
         <div id="activity-list">
-          <p class="text-center text-gray-400 py-8">Loading...</p>
+          <p class="text-center py-8" style="color: var(--text-muted);">Loading...</p>
         </div>
       </div>
     </div>
@@ -666,7 +682,7 @@ async function renderActivity() {
     const data = await response.json();
     renderActivityList(data.activity);
   } catch {
-    document.getElementById('activity-list').innerHTML = '<p class="text-center text-red-500 py-8">Failed to load activity.</p>';
+    document.getElementById('activity-list').innerHTML = '<p class="text-center py-8" style="color: var(--error);">Failed to load activity.</p>';
   }
 }
 
@@ -674,7 +690,7 @@ function renderActivityList(activities) {
   const container = document.getElementById('activity-list');
 
   if (!activities || activities.length === 0) {
-    container.innerHTML = '<p class="text-center text-gray-400 py-8">No activity recorded yet.</p>';
+    container.innerHTML = '<p class="text-center py-8" style="color: var(--text-muted);">No activity recorded yet.</p>';
     return;
   }
 
@@ -690,44 +706,64 @@ function renderActivityList(activities) {
       notes_added: 'Notes added to submission',
     };
 
-    const icons = {
-      login_success: 'bg-green-100 text-green-600',
-      login_failed: 'bg-red-100 text-red-600',
-      logout: 'bg-gray-100 text-gray-600',
-      submission_created: 'bg-blue-100 text-blue-600',
-      submission_archived: 'bg-yellow-100 text-yellow-600',
-      submission_unarchived: 'bg-green-100 text-green-600',
-      submission_deleted: 'bg-red-100 text-red-600',
-      notes_added: 'bg-purple-100 text-purple-600',
+    const iconBg = {
+      login_success: 'rgba(16,185,129,0.15)',
+      login_failed: 'rgba(239,68,68,0.15)',
+      logout: 'rgba(255,255,255,0.05)',
+      submission_created: 'rgba(139,92,246,0.15)',
+      submission_archived: 'rgba(245,158,11,0.15)',
+      submission_unarchived: 'rgba(16,185,129,0.15)',
+      submission_deleted: 'rgba(239,68,68,0.15)',
+      notes_added: 'rgba(139,92,246,0.15)',
+    };
+
+    const iconColor = {
+      login_success: '#34d399',
+      login_failed: '#f87171',
+      logout: '#6a6a80',
+      submission_created: '#a78bfa',
+      submission_archived: '#fbbf24',
+      submission_unarchived: '#34d399',
+      submission_deleted: '#f87171',
+      notes_added: '#a78bfa',
     };
 
     const label = labels[a.action] || a.action;
-    const iconClass = icons[a.action] || 'bg-gray-100 text-gray-600';
+    const bg = iconBg[a.action] || 'rgba(255,255,255,0.05)';
+    const ic = iconColor[a.action] || '#6a6a80';
 
     return `
-      <div class="flex items-center gap-3 px-6 py-3 border-b border-gray-100 last:border-0">
-        <div class="w-8 h-8 rounded-full ${iconClass} flex items-center justify-center flex-shrink-0">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      <div class="flex items-center gap-3 px-6 py-3 border-b last:border-0" style="border-color: var(--border-light);">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background: ${bg};">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: ${ic};"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
         </div>
         <div class="flex-1">
-          <p class="text-sm text-gray-900">${label}</p>
-          <p class="text-xs text-gray-400">${formatDateShort(a.timestamp)}</p>
+          <p class="text-sm" style="color: var(--text);">${label}</p>
+          <p class="text-xs" style="color: var(--text-muted);">${formatDateShort(a.timestamp)}</p>
         </div>
-        ${a.submissionId ? `<span class="text-xs text-gray-400 font-mono">${a.submissionId.slice(0, 8)}</span>` : ''}
+        ${a.submissionId ? `<span class="text-xs font-mono" style="color: var(--text-dim);">${a.submissionId.slice(0, 8)}</span>` : ''}
       </div>
     `;
   }).join('');
 }
 
 function showToast(message, type) {
-  const container = document.getElementById('modal-container');
   const colors = {
-    success: 'bg-green-50 border-green-200 text-green-800',
-    error: 'bg-red-50 border-red-200 text-red-800',
+    success: 'rgba(16,185,129,0.15)',
+    error: 'rgba(239,68,68,0.15)',
+  };
+  const textColors = {
+    success: '#34d399',
+    error: '#f87171',
+  };
+  const borderColors = {
+    success: 'rgba(16,185,129,0.3)',
+    error: 'rgba(239,68,68,0.3)',
   };
 
   const toast = document.createElement('div');
-  toast.className = `fixed top-4 right-4 z-50 max-w-sm border rounded-lg p-4 shadow-lg ${colors[type]} transition-all duration-300`;
+  toast.className = 'fixed top-4 right-4 z-50 max-w-sm border rounded-lg p-4 shadow-lg transition-all duration-300';
+  toast.style.cssText = `background: ${colors[type]}; border-color: ${borderColors[type]}; color: ${textColors[type]};`;
   toast.textContent = message;
   document.body.appendChild(toast);
 

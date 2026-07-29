@@ -43,7 +43,7 @@ Currently the system supports one form per deployment. For multiple forms, you c
 
 ### How do I change the accent color?
 
-Set the `accentColor` property in `public/config.js`. Use a hex color value (e.g., `#5865F2`).
+Set the `accentColor` property in `public/config.js`. Use a hex color value (e.g., `#8B5CF6`).
 
 ## Discord Integration
 

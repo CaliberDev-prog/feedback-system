@@ -1,6 +1,6 @@
 name = "universal-feedback-system"
 main = "worker/index.js"
-compatibility_date = "2025-01-01"
+compatibility_date = "2026-07-01"
 account_id = "13f57b424cd72b6807d00d5f9da70e2c"
 
 [assets]
@@ -17,6 +17,10 @@ CORS_ORIGIN = ""
 binding = "FEEDBACK_KV"
 id = "2e29d43d54984fd7bae1c7fa20585ee4"
 preview_id = "2e29d43d54984fd7bae1c7fa20585ee4"
+
+routes = [
+  { pattern = "universal-feedback-system.caliber-feedback.workers.dev/*", custom_domain = true }
+]
 
 [env.production]
 vars = { ENVIRONMENT = "production" }

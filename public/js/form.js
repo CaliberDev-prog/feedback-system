@@ -95,7 +95,7 @@ class FeedbackForm {
     const wrapper = document.createElement('div');
     wrapper.className = 'form-field';
     wrapper.innerHTML = `
-      <label class="block text-sm font-medium text-gray-700 mb-1.5" for="discord-field">
+      <label class="block text-sm font-medium mb-1.5" for="discord-field" style="color: var(--text-primary);">
         ${sanitizeHTML(config.form.discordLabel)}
       </label>
       <input
@@ -107,7 +107,6 @@ class FeedbackForm {
         maxlength="37"
         autocomplete="off"
       />
-      <p class="form-hint" id="discord-hint">Format: Username#0000</p>
     `;
     return wrapper;
   }
@@ -162,7 +161,7 @@ class FeedbackForm {
     }
     wrapper.innerHTML = `
       <fieldset class="rating-group">
-        <legend class="block text-sm font-medium text-gray-700 mb-2">
+        <legend class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
           ${sanitizeHTML(question.label)} ${required}
         </legend>
         <div class="rating-stars flex flex-row-reverse justify-end gap-1">
@@ -175,7 +174,7 @@ class FeedbackForm {
 
   renderText(wrapper, question, required) {
     wrapper.innerHTML = `
-      <label class="block text-sm font-medium text-gray-700 mb-1.5" for="field-${question.id}">
+      <label class="block text-sm font-medium mb-1.5" for="field-${question.id}" style="color: var(--text-primary);">
         ${sanitizeHTML(question.label)} ${required}
       </label>
       <input
@@ -194,7 +193,7 @@ class FeedbackForm {
 
   renderTextarea(wrapper, question, required) {
     wrapper.innerHTML = `
-      <label class="block text-sm font-medium text-gray-700 mb-1.5" for="field-${question.id}">
+      <label class="block text-sm font-medium mb-1.5" for="field-${question.id}" style="color: var(--text-primary);">
         ${sanitizeHTML(question.label)} ${required}
       </label>
       <textarea
@@ -215,7 +214,7 @@ class FeedbackForm {
       (opt) => `<option value="${sanitizeHTML(opt)}">${sanitizeHTML(opt)}</option>`
     ).join('');
     wrapper.innerHTML = `
-      <label class="block text-sm font-medium text-gray-700 mb-1.5" for="field-${question.id}">
+      <label class="block text-sm font-medium mb-1.5" for="field-${question.id}" style="color: var(--text-primary);">
         ${sanitizeHTML(question.label)} ${required}
       </label>
       <select
@@ -247,7 +246,7 @@ class FeedbackForm {
     ).join('');
     wrapper.innerHTML = `
       <fieldset>
-        <legend class="block text-sm font-medium text-gray-700 mb-2">
+        <legend class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
           ${sanitizeHTML(question.label)} ${required}
         </legend>
         <div class="checkbox-group">
@@ -261,7 +260,7 @@ class FeedbackForm {
   renderYesNo(wrapper, question, required) {
     wrapper.innerHTML = `
       <fieldset>
-        <legend class="block text-sm font-medium text-gray-700 mb-2">
+        <legend class="block text-sm font-medium mb-2" style="color: var(--text-primary);">
           ${sanitizeHTML(question.label)} ${required}
         </legend>
         <div class="yesno-group">
@@ -325,12 +324,9 @@ class FeedbackForm {
 
     if (config.form.showDiscordField) {
       const discordInput = document.getElementById('discord-field');
-      if (discordInput && discordInput.value) {
-        const discordPattern = /^.{2,32}#[0-9]{4}$/;
-        if (!discordPattern.test(discordInput.value.trim())) {
-          errors.push('Discord username must be in the format Username#0000.');
-          isValid = false;
-        }
+      if (discordInput && discordInput.value && discordInput.value.trim().length > 37) {
+        errors.push('Discord username is too long.');
+        isValid = false;
       }
     }
 

@@ -13,10 +13,7 @@
       theme: {
         extend: {
           colors: {
-            accent: { DEFAULT: '#5865F2', hover: '#4752C4' },
-          },
-          fontFamily: {
-            sans: ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+            accent: { DEFAULT: '#8B5CF6', hover: '#7C3AED' },
           },
         },
       },
@@ -32,14 +29,14 @@
       <div id="form-card" class="form-card p-6 sm:p-8 md:p-10">
         <div class="text-center mb-8">
           <img id="form-logo" src="assets/logo.svg" alt="Logo" class="h-10 mx-auto mb-4" />
-          <h1 id="form-title" class="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Feedback</h1>
-          <p id="form-description" class="mt-2 text-gray-500 text-sm sm:text-base">We value your input.</p>
+          <h1 id="form-title" class="text-2xl sm:text-3xl font-bold tracking-tight" style="color: var(--text-primary);">Feedback</h1>
+          <p id="form-description" class="mt-2 text-sm sm:text-base" style="color: var(--text-secondary);">We value your input.</p>
         </div>
 
         <form id="feedback-form" novalidate>
           <div id="questions-container"></div>
 
-          <div class="mt-8 pt-6 border-t border-gray-100">
+          <div class="mt-8 pt-6" style="border-top: 1px solid var(--card-border);">
             <button type="submit" id="submit-btn" class="btn-primary w-full sm:w-auto">
               Submit Feedback
             </button>
@@ -51,15 +48,15 @@
             <circle class="checkmark-circle" cx="36" cy="36" r="30" fill="none" stroke="#10b981" stroke-width="3" />
             <path class="checkmark-path" d="M22 36l10 10 18-18" fill="none" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
-          <h2 class="text-2xl font-bold text-gray-900 mb-2 animate-fade-up delay-2">Thank You!</h2>
-          <p class="text-gray-500 mb-6 animate-fade-up delay-3">Your feedback has been received. We appreciate your input.</p>
+          <h2 class="text-2xl font-bold mb-2 animate-fade-up delay-2" style="color: var(--text-primary);">Thank You!</h2>
+          <p class="mb-6 animate-fade-up delay-3" style="color: var(--text-secondary);">Your feedback has been received. We appreciate your input.</p>
           <button onclick="location.reload()" class="btn-secondary animate-fade-up delay-4">
             Submit Another Response
           </button>
         </div>
       </div>
 
-      <p id="form-footer" class="text-center text-xs text-gray-400 mt-6">Powered by Universal Feedback System</p>
+      <p id="form-footer" class="text-center text-xs mt-6" style="color: var(--text-muted);">Powered by Universal Feedback System</p>
     </div>
   </div>
 

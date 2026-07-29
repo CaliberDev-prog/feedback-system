@@ -4,8 +4,8 @@ window.FEEDBACK_CONFIG = {
     description: 'We value your input. Share your thoughts to help us improve.',
     logo: 'assets/logo.svg',
     favicon: 'assets/favicon.svg',
-    accentColor: '#5865F2',
-    theme: 'light',
+    accentColor: '#8B5CF6',
+    theme: 'dark',
     footer: 'Powered by Universal Feedback System',
   },
 
@@ -16,7 +16,7 @@ window.FEEDBACK_CONFIG = {
     submitButtonText: 'Submit Feedback',
     showDiscordField: true,
     discordLabel: 'Discord Username (optional)',
-    discordPlaceholder: 'Username#0000',
+    discordPlaceholder: 'Your Discord username',
   },
 
   success: {
