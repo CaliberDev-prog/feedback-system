@@ -140,6 +140,27 @@ class FeedbackForm {
       case 'yesno':
         this.renderYesNo(wrapper, question, required);
         break;
+      case 'divider':
+        this.renderDivider(wrapper, question);
+        break;
+      case 'heading':
+        this.renderHeading(wrapper, question);
+        break;
+      case 'markdown':
+        this.renderMarkdown(wrapper, question);
+        break;
+      case 'email':
+        this.renderEmail(wrapper, question, required);
+        break;
+      case 'number':
+        this.renderNumber(wrapper, question, required);
+        break;
+      case 'phone':
+        this.renderPhone(wrapper, question, required);
+        break;
+      case 'url':
+        this.renderUrl(wrapper, question, required);
+        break;
     }
 
     return wrapper;
@@ -280,6 +301,108 @@ class FeedbackForm {
     `;
   }
 
+  renderDivider(wrapper, question) {
+    wrapper.className = 'form-field-divider';
+    wrapper.innerHTML = `<hr style="border: none; border-top: 1px solid var(--card-border); margin: 4px 0;" />`;
+  }
+
+  renderHeading(wrapper, question) {
+    wrapper.className = 'form-field-heading';
+    const size = question.size || 'h3';
+    const tag = size;
+    wrapper.innerHTML = `
+      <${tag} style="color: var(--text-primary); margin: 0; font-weight: 700; font-size: ${size === 'h1' ? '1.5rem' : size === 'h2' ? '1.25rem' : '1.1rem'};">${sanitizeHTML(question.label)}</${tag}>
+      ${question.description ? `<p style="color: var(--text-secondary); font-size: 0.875rem; margin: 4px 0 0;">${sanitizeHTML(question.description)}</p>` : ''}
+    `;
+  }
+
+  renderMarkdown(wrapper, question) {
+    wrapper.className = 'form-field-markdown';
+    wrapper.innerHTML = `
+      <div style="color: var(--text-secondary); font-size: 0.9375rem; line-height: 1.6;">
+        ${sanitizeHTML(question.content || '')}
+      </div>
+    `;
+  }
+
+  renderEmail(wrapper, question, required) {
+    wrapper.innerHTML = `
+      <label class="block text-sm font-medium mb-1.5" for="field-${question.id}" style="color: var(--text-primary);">
+        ${sanitizeHTML(question.label)} ${required}
+      </label>
+      <input
+        type="email"
+        id="field-${question.id}"
+        name="${question.id}"
+        class="form-input"
+        placeholder="${sanitizeHTML(question.placeholder || 'your@email.com')}"
+        maxlength="${question.maxLength || 254}"
+        ${question.required ? 'required' : ''}
+        autocomplete="email"
+      />
+      <p class="form-hint" id="hint-${question.id}"></p>
+    `;
+  }
+
+  renderNumber(wrapper, question, required) {
+    wrapper.innerHTML = `
+      <label class="block text-sm font-medium mb-1.5" for="field-${question.id}" style="color: var(--text-primary);">
+        ${sanitizeHTML(question.label)} ${required}
+      </label>
+      <input
+        type="number"
+        id="field-${question.id}"
+        name="${question.id}"
+        class="form-input"
+        placeholder="${sanitizeHTML(question.placeholder || '')}"
+        ${question.min !== undefined ? `min="${question.min}"` : ''}
+        ${question.max !== undefined ? `max="${question.max}"` : ''}
+        ${question.step !== undefined ? `step="${question.step}"` : ''}
+        ${question.required ? 'required' : ''}
+        autocomplete="off"
+      />
+      <p class="form-hint" id="hint-${question.id}"></p>
+    `;
+  }
+
+  renderPhone(wrapper, question, required) {
+    wrapper.innerHTML = `
+      <label class="block text-sm font-medium mb-1.5" for="field-${question.id}" style="color: var(--text-primary);">
+        ${sanitizeHTML(question.label)} ${required}
+      </label>
+      <input
+        type="tel"
+        id="field-${question.id}"
+        name="${question.id}"
+        class="form-input"
+        placeholder="${sanitizeHTML(question.placeholder || '+1 (555) 000-0000')}"
+        maxlength="${question.maxLength || 20}"
+        ${question.required ? 'required' : ''}
+        autocomplete="tel"
+      />
+      <p class="form-hint" id="hint-${question.id}"></p>
+    `;
+  }
+
+  renderUrl(wrapper, question, required) {
+    wrapper.innerHTML = `
+      <label class="block text-sm font-medium mb-1.5" for="field-${question.id}" style="color: var(--text-primary);">
+        ${sanitizeHTML(question.label)} ${required}
+      </label>
+      <input
+        type="url"
+        id="field-${question.id}"
+        name="${question.id}"
+        class="form-input"
+        placeholder="${sanitizeHTML(question.placeholder || 'https://example.com')}"
+        maxlength="${question.maxLength || 500}"
+        ${question.required ? 'required' : ''}
+        autocomplete="url"
+      />
+      <p class="form-hint" id="hint-${question.id}"></p>
+    `;
+  }
+
   bindEvents() {
     const form = document.getElementById('feedback-form');
     if (!form) return;
@@ -361,6 +484,10 @@ class FeedbackForm {
       }
       case 'text':
       case 'textarea':
+      case 'email':
+      case 'number':
+      case 'phone':
+      case 'url':
         if (field) value = field.value.trim();
         if (question.required && !value) {
           this.markFieldError(question.id);
@@ -369,6 +496,26 @@ class FeedbackForm {
         if (value && question.maxLength && value.length > question.maxLength) {
           this.markFieldError(question.id);
           return `${question.label} must be under ${question.maxLength} characters.`;
+        }
+        if (question.type === 'email' && value) {
+          const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailPattern.test(value)) {
+            this.markFieldError(question.id);
+            return 'Please enter a valid email address.';
+          }
+        }
+        if (question.type === 'url' && value) {
+          try { new URL(value); } catch {
+            this.markFieldError(question.id);
+            return 'Please enter a valid URL.';
+          }
+        }
+        if (question.type === 'phone' && value) {
+          const digits = value.replace(/\D/g, '');
+          if (digits.length < 7 || digits.length > 15) {
+            this.markFieldError(question.id);
+            return 'Please enter a valid phone number.';
+          }
         }
         break;
       case 'select':
@@ -393,6 +540,10 @@ class FeedbackForm {
           this.markFieldError(question.id);
           return `${question.label} is required.`;
         }
+        break;
+      case 'divider':
+      case 'heading':
+      case 'markdown':
         break;
     }
 
@@ -443,10 +594,17 @@ class FeedbackForm {
       }
       case 'text':
       case 'textarea':
+      case 'email':
+      case 'number':
+      case 'phone':
+      case 'url':
       case 'select':
       case 'dropdown': {
         const field = document.getElementById(`field-${question.id}`);
         answer.value = field ? field.value.trim() : '';
+        if (question.type === 'number' && answer.value) {
+          answer.value = parseFloat(answer.value);
+        }
         break;
       }
       case 'checkboxes': {
@@ -459,6 +617,11 @@ class FeedbackForm {
         answer.value = checked.length > 0 ? checked[0].value : '';
         break;
       }
+      case 'divider':
+      case 'heading':
+      case 'markdown':
+        answer.value = '';
+        break;
     }
 
     return answer;

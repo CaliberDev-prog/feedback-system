@@ -18,6 +18,11 @@ binding = "FEEDBACK_KV"
 id = "2e29d43d54984fd7bae1c7fa20585ee4"
 preview_id = "2e29d43d54984fd7bae1c7fa20585ee4"
 
+[[d1_databases]]
+binding = "DB"
+database_name = "feedback-system"
+database_id = "e6e3d4b2-6b0b-408c-a93d-2fe22b9b7efa"
+
 routes = [
   { pattern = "universal-feedback-system.caliber-feedback.workers.dev/*", custom_domain = true }
 ]

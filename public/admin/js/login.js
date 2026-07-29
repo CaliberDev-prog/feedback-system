@@ -20,9 +20,10 @@ document.addEventListener('DOMContentLoaded', () => {
     setLoading(true);
 
     try {
-      const endpoint = config && config.form && config.form.endpoint
-        ? config.form.endpoint.replace('/api/submit', '/api/admin/login')
-        : '/api/admin/login';
+      const base = config && config.form && config.form.endpoint
+        ? config.form.endpoint.replace('/api/submit', '').replace('/api/v1/public/submit', '')
+        : '';
+      const endpoint = base + '/api/v1/auth/login';
 
       const response = await fetch(endpoint, {
         method: 'POST',

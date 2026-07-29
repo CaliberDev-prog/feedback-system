@@ -1,22 +1,39 @@
 window.FEEDBACK_CONFIG = {
+  version: '2.0',
+
   site: {
     title: 'Feedback',
     description: 'We value your input. Share your thoughts to help us improve.',
     logo: 'assets/logo.svg',
     favicon: 'assets/favicon.svg',
     accentColor: '#8B5CF6',
+    backgroundColor: '#0a0a0f',
     theme: 'dark',
+    typography: 'system',
+    borderRadius: 12,
     footer: 'Powered by Universal Feedback System',
+    loadingScreen: false,
+    openGraph: {
+      title: '',
+      description: '',
+      image: '',
+    },
+    seo: {
+      index: true,
+      follow: true,
+    },
   },
 
   form: {
-    endpoint: '/api/submit',
+    endpoint: '/api/v1/public/submit',
     successMessage: 'Thank you for your feedback!',
     errorMessage: 'Something went wrong. Please try again.',
     submitButtonText: 'Submit Feedback',
     showDiscordField: true,
     discordLabel: 'Discord Username (optional)',
     discordPlaceholder: 'Your Discord username',
+    customCSS: '',
+    customJS: '',
   },
 
   success: {
