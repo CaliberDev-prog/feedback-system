@@ -1,0 +1,25 @@
+{
+  "name": "universal-feedback-system",
+  "version": "1.0.0",
+  "description": "A modern, professional, reusable feedback system for any Discord server, business, community, project, or organization.",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "publish": "wrangler deploy",
+    "lint": "echo 'No linter configured yet'",
+    "format": "prettier --write \"**/*.{js,json,css,md}\""
+  },
+  "keywords": [
+    "feedback",
+    "discord",
+    "survey",
+    "cloudflare-workers",
+    "form"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "prettier": "^3.2.0",
+    "wrangler": "^3.0.0"
+  }
+}
