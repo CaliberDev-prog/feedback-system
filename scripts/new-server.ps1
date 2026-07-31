@@ -26,6 +26,7 @@ param(
   [string]$AdminPassword,  # dashboard password
   [string]$WebhookUrl,     # Discord webhook URL
   [switch]$SkipRebrand,    # do not touch config.js / seed.js
+  [switch]$Yes,            # skip confirmations (non-interactive)
   [switch]$DryRun          # print plan only, change nothing
 )
 
@@ -133,7 +134,7 @@ while (-not ($WebhookUrl -match '^https://')) {
 }
 
 $rebrand = -not $SkipRebrand
-if (-not $SkipRebrand) {
+if (-not $SkipRebrand -and -not $Yes) {
   $ans = Read-Host "`nRebrand this copy from ""Kwan's Performance Hub"" to ""$SiteName""? (Y/n)"
   if ($ans -and $ans.ToLowerInvariant() -ne 'y') { $rebrand = $false }
 }
@@ -156,7 +157,7 @@ Write-Host "  wrangler.toml will be backed up first."
 if ($DryRun) { Write-Host "  MODE        : DRY RUN - nothing will be created or changed" -ForegroundColor Yellow }
 Write-Host "==============================================" -ForegroundColor Cyan
 
-if (-not $DryRun) {
+if (-not $DryRun -and -not $Yes) {
   $go = Read-Host "`nProceed? (y/N)"
   if (-not $go -or $go.ToLowerInvariant() -ne 'y') { Write-Host "Aborted."; exit 0 }
 }
