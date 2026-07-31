@@ -7,6 +7,8 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "publish": "wrangler deploy",
+    "new": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/new-server.ps1",
+    "new:preview": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/new-server.ps1 -DryRun",
     "lint": "echo 'No linter configured yet'",
     "format": "prettier --write \"**/*.{js,json,css,md}\""
   },
