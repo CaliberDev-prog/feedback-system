@@ -1,10 +1,10 @@
 import { initializeDatabase } from './database/index.js';
 import { createRouter } from './router.js';
-import { checkRateLimit } from './middleware/rate-limit.js';
+import { checkRateLimit } from './middleware/rate-limit-kv.js';
 import { corsHeaders, securityHeaders, jsonResponse, errorResponse } from './utils/response.js';
 import { getClientIp } from './utils/ip.js';
 
-let dbInitialized = false;
+let initialized = false;
 
 export default {
   async fetch(request, env, ctx) {
@@ -13,85 +13,57 @@ export default {
     const path = url.pathname;
     const origin = env.CORS_ORIGIN || '';
 
-    // Initialize DB on first request
-    if (!dbInitialized) {
-      ctx.waitUntil(
-        initializeDatabase(env).then(() => { dbInitialized = true; })
-      );
-    }
-
-    // CORS preflight
-    if (method === 'OPTIONS') {
-      return handleCorsPreflight(origin);
-    }
-
-    // Try API routing
     try {
-      const router = createRouter();
-      const result = await router.resolve(method, path, request, env);
+      if (method === 'OPTIONS') {
+        return new Response(null, { status: 204, headers: { ...corsHeaders(origin), ...securityHeaders() } });
+      }
 
-      if (result) {
-        // Apply rate limiting to all API routes
-        if (path.startsWith('/api/')) {
-          const rateLimitResult = checkRateLimit(
-            getClientIp(request),
-            path,
-            parseInt(env.RATE_LIMIT_MAX) || 20,
-            parseInt(env.RATE_LIMIT_WINDOW) || 60
-          );
-
-          if (!rateLimitResult.allowed) {
-            return new Response(
-              JSON.stringify({ error: 'Too many requests. Please try again later.' }),
-              {
-                status: 429,
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Retry-After': String(rateLimitResult.retryAfter),
-                  ...corsHeaders(origin),
-                  ...securityHeaders(),
-                },
-              }
-            );
-          }
+      if (path.startsWith('/api/')) {
+        if (!initialized) {
+          await initializeDatabase(env);
+          initialized = true;
         }
 
-        return result;
+        const rl = await checkRateLimit(env, getClientIp(request), path);
+        if (!rl.allowed) {
+          return new Response(JSON.stringify({ error: 'Too many requests. Please try again later.' }), {
+            status: 429,
+            headers: {
+              'Content-Type': 'application/json',
+              'Retry-After': String(rl.retryAfter),
+              ...corsHeaders(origin),
+              ...securityHeaders(),
+            },
+          });
+        }
       }
+
+      const router = createRouter();
+      const result = await router.resolve(method, path, request, env, ctx);
+      if (result) return result;
+
+      if (env.ASSETS) {
+        try {
+          const response = await env.ASSETS.fetch(request);
+          if (response.status !== 404) {
+            const headers = new Headers(response.headers);
+            for (const [k, v] of Object.entries(securityHeaders())) headers.set(k, v);
+            const type = headers.get('Content-Type') || '';
+            if (type.includes('text/html')) {
+              headers.set('Cache-Control', 'no-cache');
+            } else if (!headers.has('Cache-Control')) {
+              headers.set('Cache-Control', 'public, max-age=3600');
+            }
+            return new Response(response.body, { status: response.status, headers });
+          }
+        } catch {}
+      }
+
+      return new Response('Not found.', { status: 404, headers: { ...securityHeaders() } });
     } catch (err) {
       console.error('Unhandled error:', err);
+      if (err && err.stack) console.error(err.stack);
       return errorResponse('Internal server error.', 500, origin);
     }
-
-    // Static assets
-    return serveStatic(request, env, url);
   },
 };
-
-function handleCorsPreflight(origin) {
-  return new Response(null, {
-    status: 204,
-    headers: { ...corsHeaders(origin), ...securityHeaders() },
-  });
-}
-
-async function serveStatic(request, env, url) {
-  if (env.ASSETS) {
-    try {
-      const response = await env.ASSETS.fetch(request);
-      if (response.status !== 404) {
-        const headers = new Headers(response.headers);
-        const secHeaders = securityHeaders();
-        for (const [key, value] of Object.entries(secHeaders)) {
-          headers.set(key, value);
-        }
-        return new Response(response.body, { status: response.status, headers });
-      }
-    } catch {}
-  }
-
-  return new Response('Not found.', {
-    status: 404,
-    headers: { ...securityHeaders() },
-  });
-}

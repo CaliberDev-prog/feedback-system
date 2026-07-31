@@ -1,7 +1,13 @@
 import { getSubmissions, getSubmission, updateSubmissionField, deleteSubmission } from '../../../models/submission.js';
 import { logActivity } from '../../../models/activity.js';
 import { requirePermission } from '../../../middleware/auth.js';
+import { requireCsrf } from '../../../middleware/csrf.js';
 import { jsonResponse, errorResponse } from '../../../utils/response.js';
+
+function csrfGuard(request, env) {
+  const csrfErr = requireCsrf(request, env);
+  return csrfErr ? errorResponse(csrfErr, 400, env.CORS_ORIGIN) : null;
+}
 
 export async function handleGetSubmissions(request, env) {
   const session = await requirePermission(request, env, 'submission.view');
@@ -17,7 +23,7 @@ export async function handleGetSubmissions(request, env) {
   return jsonResponse(result, 200, env.CORS_ORIGIN);
 }
 
-export async function handleGetSubmission(request, env, id) {
+export async function handleGetSubmission(request, env, ctx, id) {
   const session = await requirePermission(request, env, 'submission.view');
   if (!session) return errorResponse('Unauthorized.', 401, env.CORS_ORIGIN);
 
@@ -27,9 +33,11 @@ export async function handleGetSubmission(request, env, id) {
   return jsonResponse(sub, 200, env.CORS_ORIGIN);
 }
 
-export async function handleArchiveSubmission(request, env, id) {
+export async function handleArchiveSubmission(request, env, ctx, id) {
   const session = await requirePermission(request, env, 'submission.view');
   if (!session) return errorResponse('Unauthorized.', 401, env.CORS_ORIGIN);
+  const csrfErr = csrfGuard(request, env);
+  if (csrfErr) return csrfErr;
 
   const result = await updateSubmissionField(env, id, 'archived', 1);
   if (result === null) return errorResponse('Submission not found.', 404, env.CORS_ORIGIN);
@@ -43,9 +51,11 @@ export async function handleArchiveSubmission(request, env, id) {
   return jsonResponse({ success: true }, 200, env.CORS_ORIGIN);
 }
 
-export async function handleUnarchiveSubmission(request, env, id) {
+export async function handleUnarchiveSubmission(request, env, ctx, id) {
   const session = await requirePermission(request, env, 'submission.view');
   if (!session) return errorResponse('Unauthorized.', 401, env.CORS_ORIGIN);
+  const csrfErr = csrfGuard(request, env);
+  if (csrfErr) return csrfErr;
 
   const result = await updateSubmissionField(env, id, 'archived', 0);
   if (result === null) return errorResponse('Submission not found.', 404, env.CORS_ORIGIN);
@@ -59,9 +69,11 @@ export async function handleUnarchiveSubmission(request, env, id) {
   return jsonResponse({ success: true }, 200, env.CORS_ORIGIN);
 }
 
-export async function handleDeleteSubmission(request, env, id) {
+export async function handleDeleteSubmission(request, env, ctx, id) {
   const session = await requirePermission(request, env, 'submission.delete');
   if (!session) return errorResponse('Unauthorized.', 401, env.CORS_ORIGIN);
+  const csrfErr = csrfGuard(request, env);
+  if (csrfErr) return csrfErr;
 
   const sub = await getSubmission(env, id);
   if (!sub) return errorResponse('Submission not found.', 404, env.CORS_ORIGIN);
@@ -77,9 +89,11 @@ export async function handleDeleteSubmission(request, env, id) {
   return jsonResponse({ success: true }, 200, env.CORS_ORIGIN);
 }
 
-export async function handleAddNotes(request, env, id) {
+export async function handleAddNotes(request, env, ctx, id) {
   const session = await requirePermission(request, env, 'submission.view');
   if (!session) return errorResponse('Unauthorized.', 401, env.CORS_ORIGIN);
+  const csrfErr = csrfGuard(request, env);
+  if (csrfErr) return csrfErr;
 
   try {
     const body = await request.json();

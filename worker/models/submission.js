@@ -8,16 +8,24 @@ export async function createSubmission(env, data) {
   const timestamp = Date.now();
   const ip = data.ip || '';
 
-  await env.DB.prepare(
-    'INSERT INTO submissions (id, discord, timestamp, ip) VALUES (?, ?, ?, ?)'
-  ).bind(id, discord, timestamp, ip).run();
+  const statements = [
+    env.DB.prepare(
+      'INSERT INTO submissions (id, discord, timestamp, ip) VALUES (?, ?, ?, ?)'
+    ).bind(id, discord, timestamp, ip),
+  ];
 
   for (const answer of answers) {
     const aid = generateId(16);
     const val = Array.isArray(answer.value) ? JSON.stringify(answer.value) : String(answer.value);
-    await env.DB.prepare(
+    statements.push(env.DB.prepare(
       'INSERT INTO submission_answers (id, submission_id, question_id, question_type, label, value) VALUES (?, ?, ?, ?, ?, ?)'
-    ).bind(aid, id, answer.id, answer.type, answer.label, val).run();
+    ).bind(aid, id, answer.id, answer.type, answer.label, val));
+  }
+
+  if (env.DB.batch) {
+    await env.DB.batch(statements);
+  } else {
+    for (const stmt of statements) await stmt.run();
   }
 
   return { id, discord, answers, timestamp, archived: false, notes: '' };
@@ -50,28 +58,16 @@ export async function getSubmissions(env, opts = {}) {
     ${where} ORDER BY s.${sortBy} ${sortDir} LIMIT ? OFFSET ?`;
   const rows = await env.DB.prepare(sql).bind(...params, limit, offset).all();
 
-  const submissions = [];
-  for (const row of rows.results) {
-    const ansRows = await env.DB.prepare(
-      'SELECT question_id, question_type, label, value FROM submission_answers WHERE submission_id = ?'
-    ).bind(row.id).all();
+  const answerMap = await getAnswersBySubmissionIds(env, rows.results.map(r => r.id));
 
-    const answers = ansRows.results.map(r => ({
-      id: r.question_id,
-      type: r.question_type,
-      label: r.label,
-      value: parseAnswerValue(r.value, r.question_type),
-    }));
-
-    submissions.push({
-      id: row.id,
-      discord: row.discord || '',
-      answers,
-      timestamp: row.timestamp,
-      archived: !!row.archived,
-      hasNotes: !!row.notes,
-    });
-  }
+  const submissions = rows.results.map(row => ({
+    id: row.id,
+    discord: row.discord || '',
+    answers: answerMap.get(row.id) || [],
+    timestamp: row.timestamp,
+    archived: !!row.archived,
+    hasNotes: !!row.notes,
+  }));
 
   return { submissions, total, page, limit };
 }
@@ -82,16 +78,8 @@ export async function getSubmission(env, id) {
   ).bind(id).first();
   if (!row) return null;
 
-  const ansRows = await env.DB.prepare(
-    'SELECT question_id, question_type, label, value FROM submission_answers WHERE submission_id = ?'
-  ).bind(id).all();
-
-  const answers = ansRows.results.map(r => ({
-    id: r.question_id,
-    type: r.question_type,
-    label: r.label,
-    value: parseAnswerValue(r.value, r.question_type),
-  }));
+  const answerMap = await getAnswersBySubmissionIds(env, [id]);
+  const answers = answerMap.get(id) || [];
 
   return {
     id: row.id,
@@ -170,29 +158,43 @@ export async function getSubmissionAnalytics(env) {
   };
 }
 
-export async function getExportData(env, includeArchived = false) {
+export async function getExportData(env, includeArchived = false, limit = 10000) {
   const where = includeArchived ? '' : 'WHERE archived = 0';
-  const rows = await env.DB.prepare(`SELECT id, discord, timestamp, archived FROM submissions ${where} ORDER BY timestamp DESC`).all();
+  const rows = await env.DB.prepare(
+    `SELECT id, discord, timestamp, archived FROM submissions ${where} ORDER BY timestamp DESC LIMIT ?`
+  ).bind(limit).all();
 
-  const submissions = [];
-  for (const row of rows.results) {
-    const ansRows = await env.DB.prepare(
-      'SELECT question_id, question_type, label, value FROM submission_answers WHERE submission_id = ?'
-    ).bind(row.id).all();
-    submissions.push({
-      id: row.id,
-      discord: row.discord || '',
-      timestamp: row.timestamp,
-      archived: !!row.archived,
-      answers: ansRows.results.map(r => ({
-        id: r.question_id,
-        type: r.question_type,
-        label: r.label,
-        value: parseAnswerValue(r.value, r.question_type),
-      })),
+  const answerMap = await getAnswersBySubmissionIds(env, rows.results.map(r => r.id));
+
+  return rows.results.map(row => ({
+    id: row.id,
+    discord: row.discord || '',
+    timestamp: row.timestamp,
+    archived: !!row.archived,
+    answers: answerMap.get(row.id) || [],
+  }));
+}
+
+async function getAnswersBySubmissionIds(env, ids) {
+  const map = new Map();
+  if (!ids || ids.length === 0) return map;
+
+  const placeholders = ids.map(() => '?').join(',');
+  const rows = await env.DB.prepare(
+    `SELECT submission_id, question_id, question_type, label, value
+     FROM submission_answers WHERE submission_id IN (${placeholders})`
+  ).bind(...ids).all();
+
+  for (const r of rows.results) {
+    if (!map.has(r.submission_id)) map.set(r.submission_id, []);
+    map.get(r.submission_id).push({
+      id: r.question_id,
+      type: r.question_type,
+      label: r.label,
+      value: parseAnswerValue(r.value, r.question_type),
     });
   }
-  return submissions;
+  return map;
 }
 
 function parseAnswerValue(value, type) {

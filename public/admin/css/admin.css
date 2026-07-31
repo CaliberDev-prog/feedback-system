@@ -405,6 +405,29 @@ body {
   margin: 0;
 }
 
+.toast-notification {
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  transition: all 0.3s ease;
+  max-width: 380px;
+  backdrop-filter: blur(8px);
+}
+
+.question-item.dragging {
+  opacity: 0.4;
+}
+
+.question-item.drag-over {
+  border-color: var(--accent) !important;
+}
+
+.question-item button:hover {
+  background: rgba(255,255,255,0.05);
+}
+
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;

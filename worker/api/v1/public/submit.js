@@ -5,7 +5,7 @@ import { logActivity } from '../../../models/activity.js';
 import { jsonResponse, errorResponse } from '../../../utils/response.js';
 import { getClientIp } from '../../../utils/ip.js';
 
-export async function handleSubmit(request, env) {
+export async function handleSubmit(request, env, ctx) {
   try {
     const body = await request.json();
     const validationError = validateSubmission(body);
@@ -19,7 +19,11 @@ export async function handleSubmit(request, env) {
       ip: getClientIp(request),
     });
 
-    await sendDiscordNotification(env, submission);
+    if (ctx && ctx.waitUntil) {
+      ctx.waitUntil(sendDiscordNotification(env, submission));
+    } else {
+      await sendDiscordNotification(env, submission);
+    }
     await logActivity(env, 'submission_created', {
       submissionId: submission.id,
     });
@@ -30,6 +34,7 @@ export async function handleSubmit(request, env) {
       message: 'Thank you for your feedback!',
     }, 201, env.CORS_ORIGIN);
   } catch (err) {
-    return errorResponse('Failed to process submission.', 500, env.CORS_ORIGIN);
+    console.error('Submit error:', err);
+    return errorResponse('Failed to process submission: ' + err.message, 500, env.CORS_ORIGIN);
   }
 }

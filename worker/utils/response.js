@@ -1,12 +1,15 @@
 export function corsHeaders(origin) {
   const allowedOrigin = origin || '*';
-  return {
+  const headers = {
     'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-CSRF-Token',
-    'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Max-Age': '86400',
   };
+  if (allowedOrigin !== '*') {
+    headers['Access-Control-Allow-Credentials'] = 'true';
+  }
+  return headers;
 }
 
 export function securityHeaders() {
@@ -27,19 +30,20 @@ export function securityHeaders() {
   };
 }
 
-export function jsonResponse(data, status = 200, origin = '') {
+export function jsonResponse(data, status = 200, origin = '', extraHeaders = {}) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       'Content-Type': 'application/json',
       ...corsHeaders(origin),
       ...securityHeaders(),
+      ...extraHeaders,
     },
   });
 }
 
-export function errorResponse(message, status = 400, origin = '') {
-  return jsonResponse({ error: message }, status, origin);
+export function errorResponse(message, status = 400, origin = '', extraHeaders = {}) {
+  return jsonResponse({ error: message }, status, origin, extraHeaders);
 }
 
 export function htmlResponse(html, status = 200) {

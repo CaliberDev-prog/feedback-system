@@ -1,18 +1,22 @@
 import { handleSubmit } from './api/v1/public/submit.js';
+import { handlePublicConfig } from './api/v1/public/config.js';
 import { handleLogin } from './api/v1/auth/login.js';
 import { handleLogout } from './api/v1/auth/logout.js';
 import { handleCheckSession } from './api/v1/auth/session.js';
 import {
-  handleGetSubmissions,
-  handleGetSubmission,
-  handleArchiveSubmission,
-  handleUnarchiveSubmission,
-  handleDeleteSubmission,
-  handleAddNotes,
+  handleGetSubmissions, handleGetSubmission,
+  handleArchiveSubmission, handleUnarchiveSubmission,
+  handleDeleteSubmission, handleAddNotes,
 } from './api/v1/admin/submissions.js';
 import { handleGetAnalytics } from './api/v1/admin/analytics.js';
 import { handleExport } from './api/v1/admin/export.js';
 import { handleGetActivity } from './api/v1/admin/activity.js';
+import {
+  handleGetConfig, handleUpdateBranding, handleUpdateQuestions,
+  handleUpdateDiscord, handleUpdateSettings,
+  handlePublishAll, handleDiscardDraft,
+  handleGetVersions, handleRestoreVersion,
+} from './api/v1/admin/config/index.js';
 
 export class Router {
   constructor() {
@@ -24,72 +28,54 @@ export class Router {
     return this;
   }
 
-  async resolve(method, pathname, request, env) {
-    const apiPattern = /^\/api\/v1\//;
-    if (!apiPattern.test(pathname)) return null;
-
+  async resolve(method, pathname, request, env, ctx) {
     for (const route of this.routes) {
       if (route.method !== method) continue;
       const match = pathname.match(route.pattern);
       if (match) {
         const params = match.slice(1);
-        return route.handler(request, env, ...params);
+        return route.handler(request, env, ctx, ...params);
       }
     }
-
     return null;
   }
 }
 
 export function createRouter() {
-  const router = new Router();
+  const r = new Router();
 
   // Public
-  router.add('POST', /^\/api\/v1\/public\/submit$/, handleSubmit);
+  r.add('GET', /^\/api\/v1\/public\/config$/, handlePublicConfig);
+  r.add('POST', /^\/api\/v1\/public\/submit$/, handleSubmit);
 
   // Auth
-  router.add('POST', /^\/api\/v1\/auth\/login$/, handleLogin);
-  router.add('POST', /^\/api\/v1\/auth\/logout$/, handleLogout);
-  router.add('GET', /^\/api\/v1\/auth\/session$/, handleCheckSession);
+  r.add('POST', /^\/api\/v1\/auth\/login$/, handleLogin);
+  r.add('POST', /^\/api\/v1\/auth\/logout$/, handleLogout);
+  r.add('GET', /^\/api\/v1\/auth\/session$/, handleCheckSession);
+
+  // Config
+  r.add('GET', /^\/api\/v1\/admin\/config(?:\?|$)/, handleGetConfig);
+  r.add('PUT', /^\/api\/v1\/admin\/config\/branding$/, handleUpdateBranding);
+  r.add('PUT', /^\/api\/v1\/admin\/config\/questions$/, handleUpdateQuestions);
+  r.add('PUT', /^\/api\/v1\/admin\/config\/discord$/, handleUpdateDiscord);
+  r.add('PUT', /^\/api\/v1\/admin\/config\/settings$/, handleUpdateSettings);
+  r.add('POST', /^\/api\/v1\/admin\/config\/publish$/, handlePublishAll);
+  r.add('POST', /^\/api\/v1\/admin\/config\/discard$/, handleDiscardDraft);
+  r.add('GET', /^\/api\/v1\/admin\/config\/versions$/, handleGetVersions);
+  r.add('POST', /^\/api\/v1\/admin\/config\/versions\/([a-z0-9]+)\/restore$/, handleRestoreVersion);
 
   // Admin - submissions
-  router.add('GET', /^\/api\/v1\/admin\/submissions$/, handleGetSubmissions);
-  router.add('GET', /^\/api\/v1\/admin\/submissions\/([a-z0-9]+)$/, handleGetSubmission);
-  router.add('DELETE', /^\/api\/v1\/admin\/submissions\/([a-z0-9]+)$/, handleDeleteSubmission);
-  router.add('POST', /^\/api\/v1\/admin\/submissions\/([a-z0-9]+)\/archive$/, handleArchiveSubmission);
-  router.add('POST', /^\/api\/v1\/admin\/submissions\/([a-z0-9]+)\/unarchive$/, handleUnarchiveSubmission);
-  router.add('POST', /^\/api\/v1\/admin\/submissions\/([a-z0-9]+)\/notes$/, handleAddNotes);
+  r.add('GET', /^\/api\/v1\/admin\/submissions$/, handleGetSubmissions);
+  r.add('GET', /^\/api\/v1\/admin\/submissions\/([a-z0-9]+)$/, handleGetSubmission);
+  r.add('DELETE', /^\/api\/v1\/admin\/submissions\/([a-z0-9]+)$/, handleDeleteSubmission);
+  r.add('POST', /^\/api\/v1\/admin\/submissions\/([a-z0-9]+)\/archive$/, handleArchiveSubmission);
+  r.add('POST', /^\/api\/v1\/admin\/submissions\/([a-z0-9]+)\/unarchive$/, handleUnarchiveSubmission);
+  r.add('POST', /^\/api\/v1\/admin\/submissions\/([a-z0-9]+)\/notes$/, handleAddNotes);
 
   // Admin - other
-  router.add('GET', /^\/api\/v1\/admin\/analytics$/, handleGetAnalytics);
-  router.add('GET', /^\/api\/v1\/admin\/export$/, handleExport);
-  router.add('GET', /^\/api\/v1\/admin\/activity$/, handleGetActivity);
+  r.add('GET', /^\/api\/v1\/admin\/analytics$/, handleGetAnalytics);
+  r.add('GET', /^\/api\/v1\/admin\/export$/, handleExport);
+  r.add('GET', /^\/api\/v1\/admin\/activity$/, handleGetActivity);
 
-  // Legacy paths (unversioned) - redirect internally
-  addLegacyRoutes(router);
-
-  return router;
-}
-
-function addLegacyRoutes(router) {
-  // Map old paths to new handlers
-  const legacy = [
-    ['POST', /^\/api\/submit$/, handleSubmit],
-    ['POST', /^\/api\/admin\/login$/, handleLogin],
-    ['POST', /^\/api\/admin\/logout$/, handleLogout],
-    ['GET', /^\/api\/admin\/session$/, handleCheckSession],
-    ['GET', /^\/api\/admin\/submissions$/, handleGetSubmissions],
-    ['GET', /^\/api\/admin\/submissions\/([a-z0-9]+)$/, handleGetSubmission],
-    ['DELETE', /^\/api\/admin\/submissions\/([a-z0-9]+)$/, handleDeleteSubmission],
-    ['POST', /^\/api\/admin\/submissions\/([a-z0-9]+)\/archive$/, handleArchiveSubmission],
-    ['POST', /^\/api\/admin\/submissions\/([a-z0-9]+)\/unarchive$/, handleUnarchiveSubmission],
-    ['POST', /^\/api\/admin\/submissions\/([a-z0-9]+)\/notes$/, handleAddNotes],
-    ['GET', /^\/api\/admin\/analytics$/, handleGetAnalytics],
-    ['GET', /^\/api\/admin\/export$/, handleExport],
-    ['GET', /^\/api\/admin\/activity$/, handleGetActivity],
-  ];
-
-  for (const [method, pattern, handler] of legacy) {
-    router.add(method, pattern, handler);
-  }
+  return r;
 }

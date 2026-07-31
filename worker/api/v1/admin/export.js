@@ -1,8 +1,9 @@
 import { getExportData } from '../../../models/submission.js';
 import { generateCSV } from '../../../services/export.js';
+import { getConfig } from '../../../models/config.js';
 import { logActivity } from '../../../models/activity.js';
 import { requirePermission } from '../../../middleware/auth.js';
-import { jsonResponse, errorResponse } from '../../../utils/response.js';
+import { jsonResponse, errorResponse, securityHeaders, corsHeaders } from '../../../utils/response.js';
 
 export async function handleExport(request, env) {
   const session = await requirePermission(request, env, 'submission.export');
@@ -11,8 +12,10 @@ export async function handleExport(request, env) {
   const url = new URL(request.url);
   const format = url.searchParams.get('format') || 'csv';
   const includeArchived = url.searchParams.get('archived') === 'true';
+  const settings = await getConfig(env, 'settings');
+  const maxSize = Math.max(1, parseInt(settings.maxExportSize) || 10000);
 
-  const submissions = await getExportData(env, includeArchived);
+  const submissions = await getExportData(env, includeArchived, maxSize);
   if (submissions.length === 0) {
     return errorResponse('No submissions found.', 404, env.CORS_ORIGIN);
   }
@@ -33,6 +36,8 @@ export async function handleExport(request, env) {
     headers: {
       'Content-Type': 'text/csv; charset=utf-8',
       'Content-Disposition': `attachment; filename="feedback-export-${new Date().toISOString().slice(0, 10)}.csv"`,
+      ...corsHeaders(env.CORS_ORIGIN),
+      ...securityHeaders(),
     },
   });
 }

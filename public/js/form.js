@@ -308,7 +308,7 @@ class FeedbackForm {
 
   renderHeading(wrapper, question) {
     wrapper.className = 'form-field-heading';
-    const size = question.size || 'h3';
+    const size = ['h1', 'h2', 'h3'].includes(question.size) ? question.size : 'h3';
     const tag = size;
     wrapper.innerHTML = `
       <${tag} style="color: var(--text-primary); margin: 0; font-weight: 700; font-size: ${size === 'h1' ? '1.5rem' : size === 'h2' ? '1.25rem' : '1.1rem'};">${sanitizeHTML(question.label)}</${tag}>

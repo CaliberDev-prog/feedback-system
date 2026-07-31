@@ -7,7 +7,7 @@ export function timingSafeEqual(a, b) {
   return result === 0;
 }
 
-export function generateId(length = 32) {
+export function generateId(length = 16) {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
   const array = new Uint8Array(length);
@@ -24,14 +24,50 @@ export function generateToken() {
   return Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
-export function generatePasswordHash(password) {
+export async function generatePasswordHash(password) {
+  const salt = generateId(16);
+  const iterations = 100000;
   const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  return crypto.subtle.digest('SHA-256', data).then((hash) => {
-    const hex = Array.from(new Uint8Array(hash), (b) =>
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: encoder.encode(salt), iterations, hash: 'SHA-256' },
+    keyMaterial, 256
+  );
+  const hash = Array.from(new Uint8Array(bits), b =>
+    b.toString(16).padStart(2, '0')
+  ).join('');
+  return `pbkdf2:${iterations}:${salt}:${hash}`;
+}
+
+export async function verifyPassword(password, storedHash) {
+  if (!storedHash || typeof storedHash !== 'string') return false;
+  if (storedHash.startsWith('sha256:')) {
+    const hex = storedHash.replace('sha256:', '');
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hash = await crypto.subtle.digest('SHA-256', data);
+    const computed = Array.from(new Uint8Array(hash), b =>
       b.toString(16).padStart(2, '0')
     ).join('');
-    // Add a pepper prefix for basic hardening
-    return `sha256:${hex}`;
-  });
+    return timingSafeEqual(computed, hex);
+  }
+  const parts = storedHash.split(':');
+  if (parts[0] !== 'pbkdf2' || parts.length < 4) return false;
+  const iterations = parseInt(parts[1], 10);
+  const salt = parts[2];
+  const hash = parts[3];
+  const encoder = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']
+  );
+  const bits = await crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: encoder.encode(salt), iterations, hash: 'SHA-256' },
+    keyMaterial, 256
+  );
+  const computed = Array.from(new Uint8Array(bits), b =>
+    b.toString(16).padStart(2, '0')
+  ).join('');
+  return timingSafeEqual(computed, hash);
 }
